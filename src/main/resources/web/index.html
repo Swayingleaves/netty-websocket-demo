@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>websocket测试</title>
+    <meta name="keywords" content="keyword1,keyword2,keyword3">
+    <meta name="description" content="this is my page">
+    <meta name="content-type" content="text/html" charset="UTF-8">
+</head>
+
+<body>
+<hr />
+<div>
+    <span>用户：</span>
+    <input name="userIdInput" id="userIdInput" placeholder="用户ID"/>
+    <input type="button"  id="in" value="登入" onclick="connect()"/>
+    <input type="button"  id="out" value="登出" onclick="disconnect()"/>
+</div>
+
+<div>
+    <p>登录后开始接收服务器的消息：</p>
+    <label>
+        <textarea id="msg" rows="10" cols="30" placeholder="消息接收"></textarea>
+    </label>
+</div>
+<hr />
+<div>
+    <span>输入：</span>
+    <input type="text" id="msg-input" placeholder="消息"/>
+    <input type="button" id="send" value="发送消息到服务器" onclick="send()"/>
+</div>
+<hr />
+<div>
+    <span>输入用户ID：</span>
+    <input type="text" id="user-id" placeholder="用户ID"/>
+    <span>输入发送的消息：</span>
+    <input type="text" id="user-msg" placeholder="消息"/>
+    <input type="button" id="user-send" value="发送消息给用户" onclick="sendUser()"/>
+    <p>接收来自用户的消息：</p>
+    <label>
+        <textarea id="user-get-msg" rows="10" cols="30" placeholder="消息接收"></textarea>
+    </label>
+</div>
+<hr />
+<script type="text/javascript" src="jquery.min.js" charset="utf-8"></script>
+<script>
+
+    var socket = null;
+    var userId = null;
+
+    //强制关闭浏览器  调用websocket.close（）,进行正常关闭
+    window.onunload = function () {
+        disconnect()
+    }
+
+    function connect() {
+        userId = $("#userIdInput").val();
+        var socketUrl = "ws://127.0.0.1:8888/webSocket/" + userId;
+        socket = new WebSocket(socketUrl);
+        //打开事件
+        socket.onopen = function () {
+            console.log("websocket 已打开 userId: " + userId);
+        };
+        //获得消息事件
+        socket.onmessage = function (msg) {
+            var serverMsg = "收到服务端信息: " + msg.data;
+            console.log(serverMsg);
+            var json = JSON.parse(msg.data);
+            if(json.msgType === 'SERVER_REPLAY_MSG'){
+                $("#msg").prepend(json.message+"\n")
+            }
+            if(json.msgType === 'USER_MSG'){
+                $("#user-get-msg").append(json.message+"\n")
+            }
+        };
+        //关闭事件
+        socket.onclose = function () {
+            console.log("websocket 已关闭 userId: " + userId);
+        };
+        //发生了错误事件
+        socket.onerror = function () {
+            console.log("websocket 发生了错误 userId : " + userId);
+        }
+    }
+
+    function disconnect() {
+        socket.close();
+        $("#msg").val("");
+    }
+
+    function send() {
+        var input = $("#msg-input").val();
+        var chatMessage = {};
+        var message = input;
+        chatMessage.msgType = 'TO_SERVER_MSG';
+        chatMessage.message = message;
+        console.log("用户:" + userId + "发送消息:" + message);
+        socket.send(JSON.stringify(chatMessage));
+    }
+
+    function sendUser() {
+        var uid = $("#user-id").val();
+        var umsg = $("#user-msg").val();
+
+        var chatMessage = {};
+        var toUid = uid;
+        var message = umsg;
+        chatMessage.toUid = toUid;
+        chatMessage.msgType = 'USER_MSG';
+        chatMessage.message = message;
+        console.log("用户:" + userId + "发送消息:" + message+" 给:"+uid);
+        socket.send(JSON.stringify(chatMessage));
+    }
+
+</script>
+</body>
+</html>
