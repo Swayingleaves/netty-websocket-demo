@@ -23,12 +23,12 @@
 ```
 > 前端页面 
 
-[web](./src/main/resources/web/web.png)
+![web](./src/main/resources/web/web.png)
 
 > 测试
 
-[xm](./src/main/resources/web/xm.png)
+![xm](./src/main/resources/web/xm.png)
 
-[slog](./src/main/resources/web/slog.png)
+![slog](./src/main/resources/web/slog.png)
 
-[xh](./src/main/resources/web/xh.png)
+![xh](./src/main/resources/web/xh.png)
